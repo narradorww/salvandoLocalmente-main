@@ -1,37 +1,40 @@
 import React, { useState, useEffect }from 'react'
 import { SafeAreaView, StatusBar, StyleSheet, FlatList } from "react-native"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import NotaEditor from "./src/componentes/NotaEditor"
 import { Nota } from './src/componentes/Nota'
-import { criaTabela } from './src/services/notas'
+import { criaTabela, buscaNotas, verificaTabela, mostraConteudoTabela, apagaTabela} from './src/services/Notas'
 
 
 export default function App() {
 
   const [notas, setNotas] = useState([])
+  const [notaSelecionada, setNotaSelecionada] = useState({})
 
   useEffect(() => {
-    criaTabela()
+    criaTabela();
+    verificaTabela();
+    mostraConteudoTabela();
+    mostraNotas()
+    apagaTabela('PostIt')
+    
   }, [])
   
 
 
 async function mostraNotas(){
-  const todasChaves = await AsyncStorage.getAllKeys()
-  const todasNotas= await AsyncStorage.multiGet(todasChaves)
+  const todasNotas =  buscaNotas()
   setNotas(todasNotas)
-  console.log(todasNotas)
-
-}
+  console.log("mostranotas",todasNotas)
+  }
 
   return (
     <SafeAreaView style={estilos.container}>
       <FlatList
         data={notas}
-        renderItem={({item}) => <Nota item={item}/>}
-        keyExtractor={item => item[0]}
+        renderItem={(nota) => <Nota {...nota} setNotaSelecionada={setNotaSelecionada}/>}
+        keyExtractor={nota => nota.id}
        />
-      <NotaEditor mostraNotas={mostraNotas}/>
+      <NotaEditor mostraNotas={mostraNotas} notaSelecionada={notaSelecionada}/>
       <StatusBar/>
     </SafeAreaView>
   )
